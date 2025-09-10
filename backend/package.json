@@ -1,0 +1,82 @@
+{
+  "name": "atomic-attendance-backend",
+  "version": "1.0.0",
+  "description": "Backend API for Atomic College Attendance System",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:integration": "jest --testPathPattern=tests/integration",
+    "lint": "eslint src/ --ext .js",
+    "lint:fix": "eslint src/ --ext .js --fix",
+    "format": "prettier --write \"src/**/*.js\"",
+    "migrate": "npx sequelize-cli db:migrate",
+    "migrate:undo": "npx sequelize-cli db:migrate:undo",
+    "seed": "npx sequelize-cli db:seed:all",
+    "build": "babel src -d dist",
+    "docker:build": "docker build -t atomic-attendance-backend .",
+    "docker:run": "docker run -p 3000:3000 atomic-attendance-backend"
+  },
+  "keywords": [
+    "attendance",
+    "biometric",
+    "education",
+    "nodejs",
+    "express",
+    "mongodb",
+    "blockchain"
+  ],
+  "author": "Your Organization <contact@yourorg.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.5.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "morgan": "^1.10.0",
+    "dotenv": "^16.3.1",
+    "express-rate-limit": "^6.10.0",
+    "express-validator": "^7.0.1",
+    "multer": "^1.4.5-lts.1",
+    "sharp": "^0.32.5",
+    "socket.io": "^4.7.2",
+    "qrcode": "^1.5.3",
+    "speakeasy": "^2.0.0",
+    "crypto": "^1.0.1",
+    "axios": "^1.5.0",
+    "redis": "^4.6.7",
+    "winston": "^3.10.0",
+    "compression": "^1.7.4",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "nodemon": "^3.0.1",
+    "@babel/core": "^7.22.20",
+    "@babel/preset-env": "^7.22.20",
+    "@babel/cli": "^7.22.15",
+    "eslint": "^8.49.0",
+    "prettier": "^3.0.3",
+    "husky": "^8.0.3",
+    "lint-staged": "^14.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/atomic-attendance-system.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/atomic-attendance-system/issues"
+  },
+  "homepage": "https://github.com/your-org/atomic-attendance-system#readme"
+}

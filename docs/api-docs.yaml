@@ -1,0 +1,635 @@
+openapi: 3.0.3
+info:
+  title: Atomic College Attendance System API
+  description: |
+    Comprehensive API documentation for the Atomic College Attendance System.
+    This system provides secure, loophole-proof attendance management for educational institutions.
+    
+    ## Authentication
+    Most endpoints require authentication via JWT tokens. Include the token in the Authorization header:
+    ```
+    Authorization: Bearer <your-jwt-token>
+    ```
+    
+    ## Security Features
+    - Multi-factor authentication
+    - Biometric verification
+    - Geolocation validation
+    - Real-time session management
+    - Blockchain-based record integrity
+    
+    ## Rate Limiting
+    API endpoints are rate-limited to prevent abuse:
+    - General endpoints: 100 requests per 15 minutes
+    - Authentication endpoints: 5 requests per 15 minutes
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: api-support@yourorg.com
+    url: https://yourorg.com/support
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+  - url: http://localhost:5000/api/v1
+    description: Development server
+  - url: https://api-staging.yourorg.com/v1
+    description: Staging server
+  - url: https://api.yourorg.com/v1
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: User authentication and authorization
+  - name: Faculty
+    description: Faculty management operations
+  - name: Students
+    description: Student management operations
+  - name: Attendance
+    description: Attendance session and marking operations
+  - name: Biometric
+    description: Biometric verification services
+  - name: QR Code
+    description: QR code generation and validation
+  - name: Geolocation
+    description: Location-based verification
+  - name: Reports
+    description: Attendance reporting and analytics
+  - name: System
+    description: System health and configuration
+
+paths:
+  # Authentication Endpoints
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Faculty login
+      description: Authenticate faculty member with credentials
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Successful authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+        '429':
+          description: Too many login attempts
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout user
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successfully logged out
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+
+  # Faculty Endpoints
+  /faculty/profile:
+    get:
+      tags:
+        - Faculty
+      summary: Get faculty profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Faculty profile data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FacultyProfile'
+
+  /faculty/classes:
+    get:
+      tags:
+        - Faculty
+      summary: Get assigned classes
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of assigned classes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Class'
+
+  # Attendance Endpoints
+  /attendance/session/start:
+    post:
+      tags:
+        - Attendance
+      summary: Start attendance session
+      description: Faculty initiates attendance session for a class
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartSessionRequest'
+      responses:
+        '201':
+          description: Attendance session started successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceSession'
+        '400':
+          description: Invalid request parameters
+        '403':
+          description: Insufficient permissions
+
+  /attendance/session/{sessionId}/end:
+    put:
+      tags:
+        - Attendance
+      summary: End attendance session
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Session ended successfully
+
+  /attendance/mark:
+    post:
+      tags:
+        - Attendance
+      summary: Mark student attendance
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkAttendanceRequest'
+      responses:
+        '201':
+          description: Attendance marked successfully
+        '400':
+          description: Invalid attendance data
+        '409':
+          description: Attendance already marked
+
+  # Biometric Endpoints
+  /biometric/verify:
+    post:
+      tags:
+        - Biometric
+      summary: Verify biometric data
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                biometricData:
+                  type: string
+                  format: binary
+                userId:
+                  type: string
+                sessionId:
+                  type: string
+      responses:
+        '200':
+          description: Biometric verification successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BiometricVerificationResponse'
+
+  /biometric/register:
+    post:
+      tags:
+        - Biometric
+      summary: Register biometric template
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                biometricData:
+                  type: string
+                  format: binary
+                userId:
+                  type: string
+      responses:
+        '201':
+          description: Biometric template registered
+
+  # QR Code Endpoints
+  /qr/generate:
+    post:
+      tags:
+        - QR Code
+      summary: Generate dynamic QR code
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sessionId:
+                  type: string
+                classId:
+                  type: string
+      responses:
+        '200':
+          description: QR code generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QRCodeResponse'
+
+  /qr/validate:
+    post:
+      tags:
+        - QR Code
+      summary: Validate QR code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                qrCode:
+                  type: string
+                studentId:
+                  type: string
+                location:
+                  $ref: '#/components/schemas/Location'
+      responses:
+        '200':
+          description: QR code is valid
+        '400':
+          description: Invalid or expired QR code
+
+  # Reports Endpoints
+  /reports/attendance:
+    get:
+      tags:
+        - Reports
+      summary: Generate attendance report
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: classId
+          in: query
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Attendance report data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceReport'
+
+  # System Endpoints
+  /system/health:
+    get:
+      tags:
+        - System
+      summary: Health check
+      responses:
+        '200':
+          description: System is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  services:
+                    type: object
+                    properties:
+                      database:
+                        type: string
+                      redis:
+                        type: string
+                      blockchain:
+                        type: string
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "faculty@college.edu"
+        password:
+          type: string
+          format: password
+          example: "securePassword123"
+        biometricData:
+          type: string
+          description: Optional biometric verification data
+
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        token:
+          type: string
+        refreshToken:
+          type: string
+        user:
+          $ref: '#/components/schemas/FacultyProfile'
+        expiresIn:
+          type: string
+
+    TokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        refreshToken:
+          type: string
+        expiresIn:
+          type: string
+
+    FacultyProfile:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        department:
+          type: string
+        employeeId:
+          type: string
+        role:
+          type: string
+          enum: [faculty, admin]
+        isActive:
+          type: boolean
+
+    Class:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        code:
+          type: string
+        department:
+          type: string
+        semester:
+          type: string
+        academicYear:
+          type: string
+        students:
+          type: array
+          items:
+            $ref: '#/components/schemas/Student'
+
+    Student:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        rollNumber:
+          type: string
+        email:
+          type: string
+        department:
+          type: string
+        year:
+          type: integer
+        section:
+          type: string
+
+    StartSessionRequest:
+      type: object
+      required:
+        - classId
+        - classroomId
+        - location
+      properties:
+        classId:
+          type: string
+        classroomId:
+          type: string
+        location:
+          $ref: '#/components/schemas/Location'
+        duration:
+          type: integer
+          description: Session duration in minutes
+
+    AttendanceSession:
+      type: object
+      properties:
+        id:
+          type: string
+        classId:
+          type: string
+        facultyId:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [active, ended, cancelled]
+        location:
+          $ref: '#/components/schemas/Location'
+        qrCode:
+          type: string
+
+    MarkAttendanceRequest:
+      type: object
+      required:
+        - sessionId
+        - studentId
+        - method
+      properties:
+        sessionId:
+          type: string
+        studentId:
+          type: string
+        method:
+          type: string
+          enum: [qr_code, biometric, manual]
+        verificationData:
+          type: object
+          description: Additional verification data based on method
+        location:
+          $ref: '#/components/schemas/Location'
+
+    BiometricVerificationResponse:
+      type: object
+      properties:
+        verified:
+          type: boolean
+        confidence:
+          type: number
+          format: float
+        userId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    QRCodeResponse:
+      type: object
+      properties:
+        qrCode:
+          type: string
+        qrCodeImage:
+          type: string
+          format: base64
+        expiresAt:
+          type: string
+          format: date-time
+
+    Location:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+          format: float
+        accuracy:
+          type: number
+          format: float
+        timestamp:
+          type: string
+          format: date-time
+
+    AttendanceReport:
+      type: object
+      properties:
+        classId:
+          type: string
+        className:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        totalSessions:
+          type: integer
+        students:
+          type: array
+          items:
+            type: object
+            properties:
+              studentId:
+                type: string
+              name:
+                type: string
+              totalPresent:
+                type: integer
+              totalAbsent:
+                type: integer
+              attendancePercentage:
+                type: number
+                format: float
+
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+        code:
+          type: string
+        details:
+          type: object
